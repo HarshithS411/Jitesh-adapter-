@@ -1,0 +1,852 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>ADAPT FAST Drill</title>
+<style>
+@import url('https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@500;600;700&family=JetBrains+Mono:wght@400;500;600;700&display=swap');
+
+:root{
+  --bg:#0a0e13;
+  --panel:#121924;
+  --panel-alt:#1a2431;
+  --line:#2a3644;
+  --line-soft:#1e2833;
+  --text:#eaf1f6;
+  --muted:#7f93a3;
+  --amber:#ffb454;
+  --amber-dim:#8a6631;
+  --hud:#6ee7c5;
+  --danger:#ff6b6b;
+  --danger-dim:#5c2a2a;
+  --good-glow: 0 0 0 2px var(--hud), 0 0 24px -4px rgba(110,231,197,.6);
+  --bad-glow: 0 0 0 2px var(--danger), 0 0 24px -4px rgba(255,107,107,.6);
+  --font-head: 'Space Grotesk', 'Segoe UI', system-ui, sans-serif;
+  --font-mono: 'JetBrains Mono', ui-monospace, 'SF Mono', 'Roboto Mono', monospace;
+}
+
+*{box-sizing:border-box;}
+html,body{margin:0;padding:0;height:100%;}
+body{
+  background:
+    radial-gradient(1200px 700px at 50% -10%, #101823 0%, var(--bg) 60%);
+  color:var(--text);
+  font-family:var(--font-mono);
+  min-height:100vh;
+  display:flex;
+  align-items:flex-start;
+  justify-content:center;
+  padding:28px 14px 60px;
+}
+
+.app{width:100%;max-width:760px;}
+
+h1,h2,h3{font-family:var(--font-head);margin:0;}
+
+/* ---------- top strip ---------- */
+.rivets{
+  display:flex;justify-content:space-between;align-items:center;
+  padding:0 4px 14px;color:var(--muted);font-size:11px;letter-spacing:.08em;
+}
+.rivets .dot{width:6px;height:6px;border-radius:50%;background:var(--amber);display:inline-block;margin-right:6px;box-shadow:0 0 6px var(--amber);}
+
+/* ---------- panel shell ---------- */
+.panel{
+  background:linear-gradient(180deg,var(--panel) 0%, #0f151d 100%);
+  border:1px solid var(--line);
+  border-radius:10px;
+  box-shadow: inset 0 1px 0 rgba(255,255,255,.03), 0 20px 50px -30px rgba(0,0,0,.8);
+  overflow:hidden;
+}
+
+/* ================= START SCREEN ================= */
+.start-head{padding:30px 28px 6px;}
+.start-head .kicker{color:var(--amber);font-size:12px;letter-spacing:.14em;}
+.start-head h1{font-size:28px;font-weight:700;margin-top:8px;line-height:1.15;}
+.start-head p{color:var(--muted);font-size:13.5px;line-height:1.6;margin-top:12px;max-width:56ch;}
+
+.variants{padding:22px 22px 6px;display:grid;grid-template-columns:1fr;gap:10px;}
+.vcard{
+  border:1px solid var(--line);background:var(--panel-alt);
+  border-radius:8px;padding:16px 16px;cursor:pointer;
+  display:flex;align-items:center;justify-content:space-between;gap:12px;
+  transition:border-color .15s, background .15s;
+}
+.vcard:hover{border-color:var(--amber-dim);}
+.vcard.selected{border-color:var(--amber);background:#1d2632;}
+.vcard .vleft{display:flex;align-items:center;gap:14px;}
+.vbadge{
+  font-family:var(--font-head);font-weight:700;font-size:15px;
+  width:44px;height:44px;border-radius:8px;display:flex;align-items:center;justify-content:center;
+  border:1px solid var(--line);color:var(--amber);flex:none;
+}
+.vname{font-family:var(--font-head);font-weight:600;font-size:15.5px;}
+.vsub{color:var(--muted);font-size:12px;margin-top:3px;}
+.vcount{color:var(--muted);font-size:12px;white-space:nowrap;}
+
+.mode-row{padding:18px 22px 4px;}
+.mode-label{color:var(--muted);font-size:11.5px;letter-spacing:.1em;margin-bottom:8px;}
+.mode-toggle{display:flex;border:1px solid var(--line);border-radius:8px;overflow:hidden;}
+.mode-btn{flex:1;padding:12px 10px;text-align:center;background:var(--panel-alt);color:var(--muted);cursor:pointer;font-family:var(--font-mono);font-size:13px;border:none;}
+.mode-btn.active{background:#22303e;color:var(--amber);}
+.mode-btn small{display:block;color:var(--muted);font-size:10.5px;margin-top:3px;}
+.mode-btn.active small{color:var(--hud);}
+
+.start-actions{padding:20px 22px 26px;}
+.go-btn{
+  width:100%;padding:15px;border:none;border-radius:8px;
+  background:var(--amber);color:#1c1200;font-family:var(--font-head);font-weight:700;font-size:15px;
+  cursor:pointer;letter-spacing:.02em;
+}
+.go-btn:disabled{background:var(--panel-alt);color:var(--muted);cursor:not-allowed;}
+.disclaimer{color:var(--muted);font-size:11px;line-height:1.6;padding:0 22px 22px;}
+
+/* ================= QUIZ SCREEN ================= */
+.quiz-head{
+  display:flex;align-items:center;justify-content:space-between;
+  padding:16px 20px 12px;border-bottom:1px solid var(--line-soft);
+}
+.qh-left{display:flex;align-items:center;gap:10px;}
+.qh-variant{font-family:var(--font-head);font-weight:600;font-size:13px;color:var(--amber);}
+.qh-progress{color:var(--muted);font-size:12px;}
+.exit-btn{background:none;border:1px solid var(--line);color:var(--muted);border-radius:6px;padding:6px 10px;font-size:11px;cursor:pointer;font-family:var(--font-mono);}
+.exit-btn:hover{border-color:var(--danger);color:var(--danger);}
+
+.timer-wrap{height:4px;background:var(--line-soft);position:relative;overflow:hidden;}
+.timer-bar{height:100%;width:100%;background:linear-gradient(90deg,var(--hud),var(--amber));}
+.timer-wrap.hidden{display:none;}
+
+.stats-row{display:flex;gap:18px;padding:10px 20px 0;color:var(--muted);font-size:11.5px;}
+.stats-row b{color:var(--text);}
+
+.prompt-area{padding:22px 22px 8px;text-align:center;}
+.prompt-text{font-family:var(--font-head);font-size:17px;line-height:1.45;font-weight:600;}
+.prompt-note{color:var(--muted);font-size:12px;margin-top:8px;}
+.prompt-visual{margin:16px auto 4px;max-width:220px;}
+.prompt-visual svg{width:100%;display:block;}
+
+.opt-grid{
+  display:grid;grid-template-columns:1fr 1fr;grid-template-rows:1fr 1fr;
+  gap:10px;padding:16px 20px 8px;
+}
+.opt-btn{
+  position:relative;border:1px solid var(--line);background:var(--panel-alt);
+  border-radius:8px;padding:14px 12px 14px 34px;min-height:76px;
+  display:flex;align-items:center;justify-content:center;text-align:center;
+  cursor:pointer;transition:border-color .12s, transform .06s;
+  font-family:var(--font-mono);font-size:14.5px;color:var(--text);
+}
+.opt-btn:hover:not(.locked){border-color:var(--amber-dim);}
+.opt-btn:active:not(.locked){transform:scale(.98);}
+.opt-badge{
+  position:absolute;top:8px;left:8px;width:18px;height:18px;border-radius:4px;
+  border:1px solid var(--line);color:var(--muted);font-size:10px;
+  display:flex;align-items:center;justify-content:center;font-family:var(--font-head);
+}
+.opt-btn.visual{padding:20px 8px 8px;}
+.opt-btn.visual .opt-svg-wrap{width:64px;height:64px;}
+.opt-svg{width:100%;height:100%;display:block;}
+.opt-svg.big{max-width:150px;}
+
+.opt-btn.correct{border-color:var(--hud);box-shadow:var(--good-glow);}
+.opt-btn.correct .opt-badge{border-color:var(--hud);color:var(--hud);}
+.opt-btn.wrong{border-color:var(--danger);box-shadow:var(--bad-glow);}
+.opt-btn.wrong .opt-badge{border-color:var(--danger);color:var(--danger);}
+.opt-btn.locked{cursor:default;}
+.opt-btn.dim{opacity:.45;}
+
+.footer-row{display:flex;justify-content:space-between;align-items:center;padding:14px 20px 20px;color:var(--muted);font-size:11.5px;}
+.kbd-hint{font-size:10.5px;color:var(--muted);}
+.kbd-hint kbd{border:1px solid var(--line);border-radius:3px;padding:1px 5px;font-family:var(--font-mono);color:var(--text);}
+
+/* ================= END SCREEN ================= */
+.end-hero{padding:34px 26px 10px;text-align:center;}
+.end-hero .kicker{color:var(--muted);font-size:11.5px;letter-spacing:.12em;}
+.score-big{font-family:var(--font-head);font-size:56px;font-weight:700;margin-top:8px;color:var(--hud);}
+.score-sub{color:var(--muted);font-size:13px;margin-top:4px;}
+.end-metrics{display:flex;gap:10px;padding:18px 22px 4px;}
+.metric{flex:1;border:1px solid var(--line);background:var(--panel-alt);border-radius:8px;padding:12px;text-align:center;}
+.metric b{display:block;font-family:var(--font-head);font-size:19px;color:var(--text);}
+.metric span{color:var(--muted);font-size:10.5px;letter-spacing:.06em;}
+
+.review{padding:20px 22px 6px;}
+.review h3{font-size:12.5px;color:var(--muted);letter-spacing:.1em;margin-bottom:10px;}
+.rev-item{border:1px solid var(--line-soft);border-left:3px solid var(--danger);background:var(--panel-alt);border-radius:6px;padding:10px 12px;margin-bottom:8px;font-size:12.5px;}
+.rev-item.ok{border-left-color:var(--hud);}
+.rev-q{color:var(--text);margin-bottom:5px;}
+.rev-a{color:var(--muted);}
+.rev-a b{color:var(--danger);}
+.rev-a b.right{color:var(--hud);}
+.rev-empty{color:var(--muted);font-size:12.5px;padding:4px 0 10px;}
+
+.end-actions{display:flex;gap:10px;padding:20px 22px 28px;}
+.end-actions button{flex:1;padding:13px;border-radius:8px;font-family:var(--font-head);font-weight:600;font-size:13.5px;cursor:pointer;border:1px solid var(--line);}
+.btn-retry{background:var(--amber);color:#1c1200;border:none;}
+.btn-secondary{background:var(--panel-alt);color:var(--text);}
+
+.hidden{display:none !important;}
+
+@media (max-width:480px){
+  .score-big{font-size:44px;}
+  .opt-btn{font-size:13px;padding:12px 10px 12px 30px;}
+  .prompt-text{font-size:15.5px;}
+}
+</style>
+</head>
+<body>
+<div class="app">
+  <div class="rivets"><span><span class="dot"></span>ADAPT · FAST MODULE</span><span id="clockTag"></span></div>
+
+  <!-- START SCREEN -->
+  <div class="panel" id="screenStart">
+    <div class="start-head">
+      <div class="kicker">SIDE-QUESTION DRILL</div>
+      <h1>FAST module recall trainer</h1>
+      <p>Rebuilt from your prep notes across the three anagram variants — Flight, Banking, and Airplane. Pick a section, a variant, and a mode below. The De-Brief Question section covers the post-drill recall questions for Flight, Banking, and Aeroplane.</p>
+    </div>
+
+    <div class="mode-row">
+      <div class="mode-label">SECTION</div>
+      <div class="mode-toggle">
+        <button class="mode-btn active" id="catFastBtn">FAST Module<small>anagram variants</small></button>
+        <button class="mode-btn" id="catDebriefBtn">De-Brief Question<small>Flight · Banking · Aeroplane</small></button>
+      </div>
+    </div>
+
+    <div class="variants" id="variantList"></div>
+
+    <div class="mode-row">
+      <div class="mode-label">MODE</div>
+      <div class="mode-toggle">
+        <button class="mode-btn active" data-mode="timed" id="modeTimedBtn">Timed<small>5s per question</small></button>
+        <button class="mode-btn" data-mode="practice" id="modePracticeBtn">Practice<small>no clock</small></button>
+      </div>
+    </div>
+
+    <div class="start-actions">
+      <button class="go-btn" id="startBtn" disabled>Select a variant to begin</button>
+    </div>
+    <div class="disclaimer">Math, word, and recall questions are transcribed straight from your notes. Spatial ones (mirror images, rotations, cube folds, pattern grids) are rebuilt as close approximations — the handwriting/sketches didn't preserve enough detail to reproduce exactly, but the answer logic is self-consistent.</div>
+  </div>
+
+  <!-- QUIZ SCREEN -->
+  <div class="panel hidden" id="screenQuiz">
+    <div class="quiz-head">
+      <div class="qh-left">
+        <span class="qh-variant" id="qhVariant">FLIGHT</span>
+        <span class="qh-progress" id="qhProgress">Q 1/18</span>
+      </div>
+      <button class="exit-btn" id="exitBtn">End drill</button>
+    </div>
+    <div class="timer-wrap" id="timerWrap"><div class="timer-bar" id="timerBar"></div></div>
+    <div class="stats-row">
+      <span>SCORE <b id="statScore">0</b></span>
+      <span>STREAK <b id="statStreak">0</b></span>
+      <span>ACCURACY <b id="statAcc">—</b></span>
+    </div>
+
+    <div class="prompt-area">
+      <div class="prompt-text" id="promptText"></div>
+      <div class="prompt-note hidden" id="promptNote"></div>
+      <div class="prompt-visual hidden" id="promptVisual"></div>
+    </div>
+
+    <div class="opt-grid" id="optGrid"></div>
+
+    <div class="footer-row">
+      <span id="feedbackText"></span>
+      <span class="kbd-hint">keys <kbd>A</kbd><kbd>B</kbd><kbd>C</kbd><kbd>D</kbd> to answer</span>
+    </div>
+  </div>
+
+  <!-- END SCREEN -->
+  <div class="panel hidden" id="screenEnd">
+    <div class="end-hero">
+      <div class="kicker" id="endVariantLabel">FLIGHT · COMPLETE</div>
+      <div class="score-big" id="endScore">0/18</div>
+      <div class="score-sub" id="endScoreSub">—</div>
+    </div>
+    <div class="end-metrics">
+      <div class="metric"><b id="metricAcc">0%</b><span>ACCURACY</span></div>
+      <div class="metric"><b id="metricStreak">0</b><span>BEST STREAK</span></div>
+      <div class="metric"><b id="metricTime">—</b><span>AVG RESPONSE</span></div>
+    </div>
+    <div class="review">
+      <h3>MISSED QUESTIONS</h3>
+      <div id="reviewList"></div>
+    </div>
+    <div class="end-actions">
+      <button class="btn-secondary" id="chooseAnotherBtn">Choose another variant</button>
+      <button class="btn-retry" id="retryBtn">Retry this variant</button>
+    </div>
+  </div>
+</div>
+
+<script>
+/* =========================================================
+   SVG ICON GENERATORS
+   ========================================================= */
+function svgCompass(angle){
+  const rad = angle*Math.PI/180;
+  const x2 = 50 + 32*Math.sin(rad), y2 = 50 - 32*Math.cos(rad);
+  return `<svg viewBox="0 0 100 100" class="opt-svg">
+    <circle cx="50" cy="50" r="42" fill="none" stroke="var(--line)" stroke-width="3"/>
+    <text x="50" y="16" text-anchor="middle" fill="var(--muted)" font-size="11" font-family="var(--font-mono)">N</text>
+    <line x1="50" y1="50" x2="${x2.toFixed(1)}" y2="${y2.toFixed(1)}" stroke="var(--amber)" stroke-width="5" stroke-linecap="round"/>
+    <circle cx="50" cy="50" r="5" fill="var(--amber)"/>
+  </svg>`;
+}
+function svgPinwheel(colors, rotation){
+  rotation = rotation||0;
+  const blades = [0,1,2,3].map(i=>{
+    const a1 = (-45 + i*90) * Math.PI/180, a2 = (45 + i*90) * Math.PI/180;
+    const x1 = 50+42*Math.cos(a1), y1=50+42*Math.sin(a1);
+    const x2 = 50+42*Math.cos(a2), y2=50+42*Math.sin(a2);
+    return `<path d="M50,50 L${x1.toFixed(1)},${y1.toFixed(1)} A42,42 0 0,1 ${x2.toFixed(1)},${y2.toFixed(1)} Z" fill="${colors[i]}" stroke="var(--bg)" stroke-width="1.5"/>`;
+  }).join('');
+  return `<svg viewBox="0 0 100 100" class="opt-svg"><g transform="rotate(${rotation} 50 50)">${blades}</g></svg>`;
+}
+function svgStar4(color, rotation, dotColor){
+  rotation = rotation||0;
+  const outerR=44, innerR=15; let pts=[];
+  for(let i=0;i<8;i++){
+    const r = i%2===0?outerR:innerR, a=(i*45-90)*Math.PI/180;
+    pts.push(`${(50+r*Math.cos(a)).toFixed(1)},${(50+r*Math.sin(a)).toFixed(1)}`);
+  }
+  let dots='';
+  if(dotColor){
+    [0,2,4,6].forEach(i=>{
+      const a=(i*45-90)*Math.PI/180, x=50+(outerR-7)*Math.cos(a), y=50+(outerR-7)*Math.sin(a);
+      dots+=`<circle cx="${x.toFixed(1)}" cy="${y.toFixed(1)}" r="3.4" fill="${dotColor}"/>`;
+    });
+  }
+  return `<svg viewBox="0 0 100 100" class="opt-svg"><g transform="rotate(${rotation} 50 50)"><polygon points="${pts.join(' ')}" fill="${color}"/>${dots}</g></svg>`;
+}
+function svgStar6(c1,c2){
+  function tri(rot){
+    let pts=[];
+    for(let i=0;i<3;i++){ const a=(rot+i*120-90)*Math.PI/180; pts.push(`${(50+40*Math.cos(a)).toFixed(1)},${(50+40*Math.sin(a)).toFixed(1)}`); }
+    return pts.join(' ');
+  }
+  return `<svg viewBox="0 0 100 100" class="opt-svg">
+    <polygon points="${tri(0)}" fill="${c1}" fill-opacity="0.92"/>
+    <polygon points="${tri(180)}" fill="${c2}" fill-opacity="0.92"/>
+  </svg>`;
+}
+function svgCubeIso(topSym, leftSym, rightSym){
+  return `<svg viewBox="0 0 100 100" class="opt-svg">
+    <polygon points="50,8 88,27 50,46 12,27" fill="var(--panel-alt)" stroke="var(--line)" stroke-width="2"/>
+    <polygon points="12,27 50,46 50,92 12,73" fill="#141c26" stroke="var(--line)" stroke-width="2"/>
+    <polygon points="88,27 50,46 50,92 88,73" fill="#0f151d" stroke="var(--line)" stroke-width="2"/>
+    <text x="50" y="30" text-anchor="middle" fill="var(--amber)" font-size="13" font-weight="700">${topSym||''}</text>
+    <text x="26" y="64" text-anchor="middle" fill="var(--hud)" font-size="13" font-weight="700">${leftSym||''}</text>
+    <text x="74" y="64" text-anchor="middle" fill="var(--hud)" font-size="13" font-weight="700">${rightSym||''}</text>
+  </svg>`;
+}
+function svgCubeNet(cells){
+  const s=17, y0=41;
+  function sq(x,y,label){
+    return `<rect x="${x}" y="${y}" width="${s}" height="${s}" fill="var(--panel-alt)" stroke="var(--line)" stroke-width="1.5"/><text x="${x+s/2}" y="${y+s/2+4}" text-anchor="middle" fill="var(--amber)" font-size="10" font-weight="700">${label||''}</text>`;
+  }
+  let out='<svg viewBox="0 0 100 100" class="opt-svg big">';
+  out+=sq(9,y0,cells.c1); out+=sq(9+s,y0,cells.c2); out+=sq(9+s*2,y0,cells.c3); out+=sq(9+s*3,y0,cells.c4);
+  out+=sq(9+s,y0-s,cells.top); out+=sq(9+s,y0+s,cells.bottom);
+  out+='</svg>';
+  return out;
+}
+function svgSpeedTape(value){
+  const marks=[0,60,120,180,240,300], h=84, top=8;
+  function yFor(v){ return top + h*(1-v/300); }
+  let ticks = marks.map(v=>`<line x1="55" y1="${yFor(v).toFixed(1)}" x2="64" y2="${yFor(v).toFixed(1)}" stroke="var(--line)" stroke-width="1.5"/><text x="70" y="${(yFor(v)+3).toFixed(1)}" fill="var(--muted)" font-size="8">${v}</text>`).join('');
+  const py=yFor(value);
+  return `<svg viewBox="0 0 100 100" class="opt-svg big">
+    <line x1="55" y1="${top}" x2="55" y2="${top+h}" stroke="var(--line)" stroke-width="2"/>
+    ${ticks}
+    <polygon points="30,${py.toFixed(1)} 50,${(py-7).toFixed(1)} 50,${(py+7).toFixed(1)}" fill="var(--amber)"/>
+    <text x="14" y="${(py+4).toFixed(1)}" fill="var(--amber)" font-size="11" font-weight="700" text-anchor="middle">${value}</text>
+  </svg>`;
+}
+function svgArrowOval(mirrored, rotate180){
+  const scaleX = mirrored? -1:1, rot = rotate180?180:0;
+  return `<svg viewBox="0 0 100 100" class="opt-svg">
+    <g transform="translate(50 50) rotate(${rot}) scale(${scaleX},1) translate(-50 -50)">
+      <ellipse cx="50" cy="50" rx="40" ry="22" fill="none" stroke="var(--line)" stroke-width="3"/>
+      <line x1="72" y1="50" x2="30" y2="50" stroke="var(--amber)" stroke-width="5" stroke-linecap="round"/>
+      <polygon points="30,50 42,42 42,58" fill="var(--amber)"/>
+    </g>
+  </svg>`;
+}
+function svgMirrorShape(flip){
+  const scaleX = flip? -1:1;
+  return `<svg viewBox="0 0 100 100" class="opt-svg">
+    <g transform="translate(50 50) scale(${scaleX},1) translate(-50 -50)">
+      <rect x="6" y="6" width="88" height="88" fill="none" stroke="var(--line)" stroke-width="2"/>
+      <path d="M6,6 L6,30 L30,30 L30,6 Z" fill="var(--hud)"/>
+      <line x1="94" y1="6" x2="6" y2="94" stroke="var(--amber)" stroke-width="3"/>
+    </g>
+  </svg>`;
+}
+function svgTriangleInBox(corner){
+  const map={
+    tl:'6,6 62,6 6,62', tr:'94,6 94,62 38,6',
+    bl:'6,94 6,38 62,94', br:'94,94 38,94 94,38',
+    diag:'10,90 90,10 90,90'
+  };
+  return `<svg viewBox="0 0 100 100" class="opt-svg"><rect x="4" y="4" width="92" height="92" fill="none" stroke="var(--line)" stroke-width="2"/><polygon points="${map[corner]}" fill="none" stroke="var(--amber)" stroke-width="3.5"/></svg>`;
+}
+function svgBowtie(rotation, swap){
+  const c1 = swap? 'var(--panel-alt)':'var(--amber)', c2 = swap? 'var(--amber)':'var(--panel-alt)';
+  return `<svg viewBox="0 0 100 100" class="opt-svg"><g transform="rotate(${rotation} 50 50)">
+    <polygon points="10,20 50,50 10,80" fill="${c1}" stroke="var(--line)" stroke-width="2"/>
+    <polygon points="90,20 50,50 90,80" fill="${c2}" stroke="var(--line)" stroke-width="2"/>
+  </g></svg>`;
+}
+function svgMoonPhase(fraction){
+  const r=40,cx=50,cy=50,angle=fraction*360,largeArc=angle>180?1:0;
+  const endX=cx+r*Math.sin(angle*Math.PI/180), endY=cy-r*Math.cos(angle*Math.PI/180);
+  let path='';
+  if(fraction>=1) path=`<circle cx="${cx}" cy="${cy}" r="${r}" fill="var(--amber)"/>`;
+  else if(fraction>0) path=`<path d="M${cx},${cy} L${cx},${cy-r} A${r},${r} 0 ${largeArc},1 ${endX.toFixed(1)},${endY.toFixed(1)} Z" fill="var(--amber)"/>`;
+  return `<svg viewBox="0 0 100 100" class="opt-svg"><circle cx="${cx}" cy="${cy}" r="${r}" fill="none" stroke="var(--line)" stroke-width="2"/>${path}</svg>`;
+}
+function svgNumberGrid3x3(numbers, highlightIdx){
+  let cells='';
+  for(let i=0;i<9;i++){
+    const col=i%3, row=Math.floor(i/3), x=8+col*30, y=8+row*30;
+    cells+=`<rect x="${x}" y="${y}" width="26" height="26" fill="var(--panel-alt)" stroke="var(--line)" stroke-width="1.5"/>`;
+    cells+=`<text x="${x+13}" y="${y+18}" text-anchor="middle" fill="var(--text)" font-size="11">${numbers[i]}</text>`;
+    if(i===highlightIdx) cells+=`<circle cx="${x+13}" cy="${y+13}" r="15" fill="none" stroke="var(--amber)" stroke-width="2.5"/>`;
+  }
+  return `<svg viewBox="0 0 100 100" class="opt-svg big">${cells}</svg>`;
+}
+function svgLetterGrid(letters){
+  let cells='';
+  letters.forEach((L,i)=>{
+    const col=i%3, row=Math.floor(i/3), x=10+col*28, y=8+row*36;
+    cells+=`<rect x="${x}" y="${y}" width="24" height="28" fill="var(--panel-alt)" stroke="var(--line)" stroke-width="1.5"/><text x="${x+12}" y="${y+19}" text-anchor="middle" fill="var(--text)" font-size="11">${L}</text>`;
+  });
+  return `<svg viewBox="0 0 100 76" class="opt-svg big">${cells}</svg>`;
+}
+function svgColorGrid(colors){
+  let cells='';
+  colors.forEach((c,i)=>{
+    const col=i%2, row=Math.floor(i/2), x=10+col*42, y=10+row*42;
+    cells+=`<rect x="${x}" y="${y}" width="36" height="36" fill="${c}" stroke="var(--line)" stroke-width="1.5" rx="3"/>`;
+  });
+  return `<svg viewBox="0 0 100 100" class="opt-svg big">${cells}</svg>`;
+}
+function svgDotGrid(coords, color){
+  const dots = coords.map(([x,y])=>`<circle cx="${x}" cy="${y}" r="5.5" fill="${color}"/>`).join('');
+  return `<svg viewBox="0 0 100 100" class="opt-svg big"><rect x="4" y="4" width="92" height="92" fill="none" stroke="var(--line)" stroke-width="1.5" rx="4"/>${dots}</svg>`;
+}
+function svgAircraftRow(count){
+  let icons='';
+  for(let i=0;i<count;i++){
+    icons+=`<g transform="translate(${6+i*(88/count)},30)"><path d="M0,10 L20,4 L40,10 L20,7 Z" fill="var(--hud)"/><path d="M16,10 L20,-2 L24,10 Z" fill="var(--hud)"/></g>`;
+  }
+  return `<svg viewBox="0 0 100 44" class="opt-svg big">${icons}</svg>`;
+}
+function svgFlightPathTape(){
+  const marks=[20,40,60,80], labels=['A','B','C','D'];
+  let ticks = marks.map((v,i)=>`<line x1="${v}" y1="40" x2="${v}" y2="58" stroke="var(--line)" stroke-width="2"/><text x="${v}" y="72" text-anchor="middle" fill="var(--muted)" font-size="9">${labels[i]}</text>`).join('');
+  return `<svg viewBox="0 0 100 84" class="opt-svg big">
+    <line x1="5" y1="49" x2="95" y2="49" stroke="var(--line)" stroke-width="2"/>
+    ${ticks}
+    <polygon points="5,49 16,44 16,54" fill="var(--amber)"/>
+    <text x="10" y="30" fill="var(--amber)" font-size="9">320kt</text>
+    <polygon points="95,49 84,44 84,54" fill="var(--hud)"/>
+    <text x="90" y="30" fill="var(--hud)" font-size="9" text-anchor="end">160kt</text>
+  </svg>`;
+}
+function svgSeqShape(type,dots,size){
+  size=size||30; let shape='';
+  if(type==='triangle') shape=`<polygon points="50,${50-size} ${50-size},${50+size*0.8} ${50+size},${50+size*0.8}" fill="none" stroke="var(--amber)" stroke-width="3"/>`;
+  if(type==='circle') shape=`<circle cx="50" cy="50" r="${size}" fill="none" stroke="var(--amber)" stroke-width="3"/>`;
+  if(type==='square') shape=`<rect x="${50-size}" y="${50-size}" width="${size*2}" height="${size*2}" fill="none" stroke="var(--amber)" stroke-width="3"/>`;
+  const dp=[[50,50],[42,55],[58,55],[50,42],[42,46],[58,46]]; let dd='';
+  for(let i=0;i<dots;i++){ const p=dp[i%dp.length]; dd+=`<circle cx="${p[0]}" cy="${p[1]}" r="3" fill="var(--hud)"/>`; }
+  return `<svg viewBox="0 0 100 100" class="opt-svg">${shape}${dd}</svg>`;
+}
+function svgStarPathOnly(color){
+  const outerR=36, innerR=14; let pts=[];
+  for(let i=0;i<10;i++){ const r=i%2===0?outerR:innerR, a=(i*36-90)*Math.PI/180; pts.push(`${(50+r*Math.cos(a)).toFixed(1)},${(50+r*Math.sin(a)).toFixed(1)}`); }
+  return `<polygon points="${pts.join(' ')}" fill="${color}"/>`;
+}
+function svgIconCell(shape,color){
+  let s='';
+  if(shape==='square') s=`<rect x="20" y="20" width="60" height="60" fill="${color}" rx="4"/>`;
+  if(shape==='circle') s=`<circle cx="50" cy="50" r="32" fill="${color}"/>`;
+  if(shape==='star') s=svgStarPathOnly(color);
+  if(shape==='triangle') s=`<polygon points="50,16 88,84 12,84" fill="${color}"/>`;
+  return `<svg viewBox="0 0 100 100" class="opt-svg">${s}</svg>`;
+}
+function svgSwatchRow(colors){
+  let cells = colors.map((c,i)=>`<rect x="${6+i*24}" y="30" width="18" height="18" fill="${c}" stroke="var(--line)" stroke-width="1"/>`).join('');
+  return `<svg viewBox="0 0 100 78" class="opt-svg big">${cells}</svg>`;
+}
+
+/* colors */
+const CLR = {red:'#e0524a',blue:'#4f9dde',yellow:'#f2c14e',green:'#5cb85c',orange:'#f0954f',pink:'#e88ac0',purple:'#b768d1',teal:'#4fd6c4',white:'#dfe6ec'};
+
+/* =========================================================
+   QUESTION DATA
+   ========================================================= */
+const QUESTIONS = {
+  flight: [
+    { prompt:'40% of 450 = ?', options:[{text:'180'},{text:'190'},{text:'170'},{text:'200'}], correct:0 },
+    { prompt:'What comes next? 24, 32, 40, 48, __', options:[{text:'52'},{text:'60'},{text:'56'},{text:'64'}], correct:2 },
+    { prompt:'Solve for x: 4x − 3 = 33', options:[{text:'8'},{text:'8.5'},{text:'7.5'},{text:'9'}], correct:3 },
+    { prompt:'Find number 3', options:[{text:'A'},{text:'B'},{text:'C'},{text:'D'}], correct:0 },
+    { prompt:'Which compass below is pointing NORTH?', options:[{svg:svgCompass(35)},{svg:svgCompass(160)},{svg:svgCompass(270)},{svg:svgCompass(0)}], correct:3 },
+    { prompt:'How many cars are on display?', promptVisual:svgAircraftRow(4), note:'Recurring pattern in your notes: this question type is answered "4" almost every time.', options:[{text:'3'},{text:'4'},{text:'5'},{text:'6'}], correct:1 },
+    { prompt:'Find the number', promptVisual:svgNumberGrid3x3(['82','23','19','91','82','37','65','23','19'],-1), options:[{text:'822319'},{text:'823219'},{text:'822139'},{text:'829213'}], correct:0 },
+    { prompt:'Which colour did NOT appear in the grid?', promptVisual:svgColorGrid([CLR.red,CLR.blue,CLR.yellow,CLR.orange]), options:[{text:'RED'},{text:'BLUE'},{text:'YELLOW'},{text:'GREEN'}], correct:3 },
+    { prompt:'Which letter did NOT appear anywhere in the grid?', promptVisual:svgLetterGrid(['G','T','C','X','D','S']), options:[{text:'G'},{text:'P'},{text:'S'},{text:'C'}], correct:1 },
+    { prompt:'Select the matching roated shape', promptVisual:null,
+      options:[{text:'A'},{text:'B'},{text:'C'},{text:'D'}], correct:1 },
+    { prompt:'Select the mirror image', promptVisual:null,
+      options:[{text:'A'},{text:'B'},{text:'C'},{text:'D'}], correct:2 },
+    { prompt:'Where will the aircraft meet', promptVisual:null, options:[{text:'A'},{text:'B'},{text:'C'},{text:'D'}], correct:2 },
+    { prompt:'Complete the sequence', promptVisual:null,
+      options:[{text:'A'},{text:'B'},{svg:svgSeqShape('triangle',3)},{text:'D'}], correct:2 },
+    { prompt:'Complete the grid', options:[{text:'A'},{text:'B'},{text:'C'},{text:'D'}], correct:0 },
+    { prompt:'Select the missing peice from the pattern', options:[{text:'A'},{text:'B'},{text:'C'},{text:'D'}], correct:3 },
+    { prompt:'Select correct anagram of "FLIGHT"', options:[{text:'THGIFL'},{text:'FRIGHT'},{text:'LIGHT'},{text:'FIGHT'}], correct:0 },
+    { prompt:'Which word is the odd one out?', options:[{text:'METRE'},{text:'INCH'},{text:'FOOT'},{text:'YARD'}], correct:0 },
+    { prompt:'Which of these is the correct spelling of ALTITUDE?', options:[{text:'ALTITUD'},{text:'ATITUDE'},{text:'ALTITUTE'},{text:'ALTITUDE'}], correct:3 }
+  ],
+  banking: [
+    { prompt:'3 + (4 × 8) = ?', options:[{text:'35'},{text:'32'},{text:'38'},{text:'27'}], correct:0 },
+    { prompt:'What comes next? 1, 2, 4, 8, __', options:[{text:'16'},{text:'12'},{text:'10'},{text:'20'}], correct:0 },
+    { prompt:'25% of 600 = ?', options:[{text:'120'},{text:'150'},{text:'140'},{text:'180'}], correct:1 },
+    { prompt:'Which airspeed indicator reads 140 knots?', options:[{text:'ASI of 100 knots'},{text:'ASI of 120 knots'},{text:'ASI of 130 knots'},{text:'ASI of 140 knots'}], correct:3 },
+    { prompt:'Find the number 33961', options:[{text:'39361'},{text:'33691'},{text:'33961'},{text:'36931'}], correct:2 },
+    { prompt:'How many aircraft are in the picture?', promptVisual:svgAircraftRow(4), note:'Another one your notes flagged as usually landing on "4".', options:[{text:'3'},{text:'3'},{text:'4'},{text:'6'}], correct:2 },
+    { prompt:'Which of these matches 165959?', options:[{text:'165599'},{text:'159659'},{text:'156959'},{text:'165959'}], correct:3 },
+    { prompt:'Which colour did NOT appear in the grid?', promptVisual:null, options:[{text:'A'},{text:'B'},{text:'C'},{text:'D'}], correct:1 },
+    { prompt:'How many red dots are here?', promptVisual:svgDotGrid([[20,20],[45,18],[70,25],[30,50],[62,55],[50,75]], CLR.red), options:[{text:'5'},{text:'5'},{text:'6'},{text:'8'}], correct:2 },
+    { prompt:'Select the matching roated shape', options:[
+        {text:'A'},
+        {text:'B'},
+        {text:'C'},
+        {text:'D'}
+      ], correct:3 },
+    { prompt:'Identify cube?', promptVisual:svgCubeNet({c1:'',c2:'★',c3:'',c4:'',top:'●',bottom:''}),
+      options:[{text:'A'},{text:'B'},{text:'C'},{text:'D'}], correct:0 },
+    { prompt:'Where was the restaurant Loacted?', options:[{text:'A'},{text:'B'},{text:'C'},{text:'D'}], correct:0 },
+    { prompt:'Complete the sequence: 25% shaded, 50% shaded, 75% shaded, __', promptVisual:svgMoonPhase(0.75), options:[{svg:svgMoonPhase(0)},{svg:svgMoonPhase(0.5)},{svg:svgMoonPhase(0.75)},{svg:svgMoonPhase(1)}], correct:3 },
+    { prompt:'Complete the Statement', options:[
+        {text:'A'},
+        {text:'B'},
+        {text:'C'},
+        {text:'D'}
+      ], correct:2 },
+    { prompt:'Complete the Grid', promptVisual:null,
+      options:[{text:'A'},{text:'B'},{text:'C'},{text:'D'}], correct:2 },
+    { prompt:'Select correct anagram of BANKING', options:[{text:'BANKIGN'},{text:'BANIKNG'},{text:'BAKNING'},{text:'ANBINGK'}], correct:3 },
+    { prompt:'Which of these is the correct spelling of CLIMB?', options:[{text:'CLIMD'},{text:'CLIMB'},{text:'CLYMB'},{text:'CLIMEB'}], correct:1 },
+    { prompt:'Which one is the odd one out?', options:[{text:'CONFIRM'},{text:'CLIMB'},{text:'DESCEND'},{text:'TURN'}], correct:0 }
+  ],
+  airplane: [
+    { prompt:'7 + 16 − 4 = ?', options:[{text:'12'},{text:'15'},{text:'17'},{text:'19'}], correct:3 },
+    { prompt:'What comes next? 11, 18, 25, 32, __', options:[{text:'30'},{text:'42'},{text:'39'},{text:'35'}], correct:2 },
+    { prompt:'Solve: 2/6 + 1/2 = ?', options:[{text:'5/6'},{text:'4/6'},{text:'2/12'},{text:'3/8'}], correct:0 },
+    { prompt:'Which airspeed indicator reads 160 knots?', options:[{svg:svgSpeedTape(120)},{svg:svgSpeedTape(160)},{svg:svgSpeedTape(200)},{svg:svgSpeedTape(240)}], correct:1 },
+    { prompt:'Which of these matches 9731?', options:[{text:'9731'},{text:'9713'},{text:'7931'},{text:'9371'}], correct:0 },
+    { prompt:'How many aircarfts are on display?', promptVisual:null, options:[{text:'2'},{text:'3'},{text:'4'},{text:'5'}], correct:2 },
+    { prompt:'Which of these matches 234976?', options:[{text:'234976'},{text:'234967'},{text:'243976'},{text:'234796'}], correct:0 },
+    { prompt:'This sequence of swatches — Y P Y B — appears above. Which option matches it exactly?', promptVisual:svgSwatchRow([CLR.yellow,CLR.purple,CLR.yellow,CLR.blue]),
+      options:[{svg:svgSwatchRow([CLR.yellow,CLR.blue,CLR.yellow,CLR.purple])},{svg:svgSwatchRow([CLR.purple,CLR.yellow,CLR.blue,CLR.yellow])},{svg:svgSwatchRow([CLR.yellow,CLR.purple,CLR.yellow,CLR.blue])},{svg:svgSwatchRow([CLR.blue,CLR.yellow,CLR.purple,CLR.yellow])}], correct:2 },
+    { prompt:'Find the image that is identical to this one — same rotation, same dot colour.', promptVisual:svgStar4(CLR.purple,20,CLR.blue),
+      options:[{svg:svgStar4(CLR.purple,20,CLR.blue)},{svg:svgStar4(CLR.purple,20,CLR.red)},{svg:svgStar4(CLR.purple,60,CLR.blue)},{svg:svgStar4(CLR.pink,20,CLR.blue)}], correct:0 },
+    { prompt:'Select the matching roated shape', promptVisual:null,
+      options:[{text:'A'},{text:'B'},{text:'C'},{text:'D'}], correct:2 },
+    { prompt:'Identify cube?', promptVisual:null,
+      options:[{text:'A'},{text:'B'},{text:'C'},{text:'D'}], correct:1 },
+    { prompt:'Select the mirror image', promptVisual:svgArrowOval(false,false),
+      options:[{text:'A'},{text:'B'},{text:'C'},{text:'D'}], correct:2 },
+    { prompt:'Complete the Pattern', options:[{text:'A'},{text:'B'},{text:'C'},{text:'D'}], correct:1 },
+    { prompt:'Find odd one out', options:[{text:'A'},{text:'B'},{text:'C'},{text:'D'}], correct:0 },
+    { prompt:'Complete the grid', options:[{text:'A'},{text:'B'},{text:'C'},{text:'D'}], correct:0 },
+    { prompt:'Select the correct anagram of AIRPLANE.', options:[{text:'ALIPIERE'},{text:'BREPLIN'},{text:'ERILONPA'},{text:'PALRINEA'}], correct:3 },
+    { prompt:'Which one is the odd one out?', options:[{text:'WINDOW'},{text:'ROOF'},{text:'HOUSE'},{text:'DOOR'}], correct:2 },
+    { prompt:'Which one is the odd one out?', options:[{text:'MARBLE'},{text:'GRANITE'},{text:'ROCK'},{text:'SLATE'}], correct:2 }
+  ]
+};
+
+const VARIANT_META = {
+  flight:  {name:'FLIGHT',   badge:'FLT', sub:'Math, spatial & word recall — 18 questions'},
+  banking: {name:'BANKING',  badge:'BNK', sub:'Math, spatial & word recall — 18 questions'},
+  airplane:{name:'AIRPLANE', badge:'APL', sub:'Fully-specified FAST set — 18 questions'}
+};
+
+/* =========================================================
+   DE-BRIEF QUESTION DATA
+   (post-drill recall questions — 3 subsections)
+   ========================================================= */
+const DEBRIEF_QUESTIONS = {
+  flight: [
+    { prompt:'How many aircraft were there?', options:[{text:'5'},{text:'6'},{text:'7'},{text:'8'}], correct:2 },
+    { prompt:'How many different voices did you hear?', options:[{text:'2'},{text:'3'},{text:'4'},{text:'5'}], correct:2 },
+    { prompt:'Red lights?', options:[{text:'1'},{text:'2'},{text:'3'},{text:'4'}], correct:1 },
+    { prompt:'Helicopters?', options:[{text:'1'},{text:'2'},{text:'3'},{text:'4'}], correct:2 },
+    { prompt:'Beeps?', options:[{text:'2'},{text:'3'},{text:'4'},{text:'5'}], correct:2 },
+    { prompt:'Where were the 3 Helicopters?', options:[{text:'Btw 1 wpt 2 wpt'},{text:'Btw 2 wpt 3 wpt'},{text:'At wpt 1'},{text:'At wpt 3'}], correct:0 },
+    { prompt:'Where did you find 2 Helicopters?', options:[{text:'1st wpt'},{text:'2nd wpt'},{text:'3rd wpt'},{text:'Btw 1st and 2nd wpt'}], correct:0 }
+  ],
+  banking: [
+    { prompt:'How many aircraft were there?', options:[{text:'3'},{text:'4'},{text:'5'},{text:'6'}], correct:2 },
+    { prompt:'How many different voices did you hear?', options:[{text:'2'},{text:'3'},{text:'4'},{text:'5'}], correct:1 },
+    { prompt:'Red lights?', options:[{text:'1'},{text:'2'},{text:'3'},{text:'4'}], correct:2 },
+    { prompt:'Helicopters?', options:[{text:'1'},{text:'2'},{text:'3'},{text:'4'}], correct:1 },
+    { prompt:'Beeps?', options:[{text:'2'},{text:'3'},{text:'4'},{text:'5'}], correct:2 },
+    { prompt:'Where were the 3 Helicopters?', options:[{text:'Btw 1 wpt 2 wpt'},{text:'Btw 2 wpt 3 wpt'},{text:'At wpt 1'},{text:'At wpt 3'}], correct:0 },
+    { prompt:'Where did you find 2 Helicopters?', options:[{text:'1st wpt'},{text:'2nd wpt'},{text:'3rd wpt'},{text:'Btw 1st and 2nd wpt'}], correct:0 }
+  ],
+  aeroplane: [
+    { prompt:'How many aircraft were there?', options:[{text:'4'},{text:'5'},{text:'6'},{text:'7'}], correct:2 },
+    { prompt:'How many different voices did you hear?', options:[{text:'2'},{text:'3'},{text:'4'},{text:'5'}], correct:1 },
+    { prompt:'Red lights?', options:[{text:'1'},{text:'2'},{text:'3'},{text:'4'}], correct:2 },
+    { prompt:'Helicopters?', options:[{text:'1'},{text:'2'},{text:'3'},{text:'4'}], correct:1 },
+    { prompt:'Beeps?', options:[{text:'2'},{text:'3'},{text:'4'},{text:'5'}], correct:1 },
+    { prompt:'Where were the 3 Helicopters?', options:[{text:'Btw 1 wpt 2 wpt'},{text:'Btw 2 wpt 3 wpt'},{text:'At wpt 1'},{text:'At wpt 3'}], correct:0 },
+    { prompt:'Where did you find 2 Helicopters?', options:[{text:'1st wpt'},{text:'2nd wpt'},{text:'3rd wpt'},{text:'Btw 1st and 2nd wpt'}], correct:0 }
+  ]
+};
+
+const DEBRIEF_META = {
+  flight:    {name:'FLIGHT',    badge:'FLT', sub:'Post-drill recall — 7 questions'},
+  banking:   {name:'BANKING',   badge:'BNK', sub:'Post-drill recall — 7 questions'},
+  aeroplane: {name:'AEROPLANE', badge:'APL', sub:'Post-drill recall — 7 questions'}
+};
+
+/* =========================================================
+   APP LOGIC
+   ========================================================= */
+const state = { category:'fast', variant:null, mode:'timed', qIndex:0, score:0, streak:0, bestStreak:0, answers:[], runQuestions:[], timedOut:false, qStart:0, times:[] };
+function currentMeta(){ return state.category==='debrief' ? DEBRIEF_META : VARIANT_META; }
+function currentSource(){ return state.category==='debrief' ? DEBRIEF_QUESTIONS : QUESTIONS; }
+let timerHandle = null;
+
+function shuffle(arr){
+  const a = arr.slice();
+  for(let i=a.length-1;i>0;i--){ const j=Math.floor(Math.random()*(i+1)); [a[i],a[j]]=[a[j],a[i]]; }
+  return a;
+}
+
+function buildRun(variantKey){
+  const base = currentSource()[variantKey];
+  return base.map(q=>{
+    const options = q.options.slice();
+    const correct = q.correct;
+    return { prompt:q.prompt, promptVisual:q.promptVisual||null, note:q.note||null, options, correct };
+  });
+}
+
+/* ---------- start screen ---------- */
+const variantList = document.getElementById('variantList');
+function renderVariantList(){
+  const meta = currentMeta();
+  const source = currentSource();
+  variantList.innerHTML = '';
+  Object.keys(meta).forEach(key=>{
+    const m = meta[key];
+    const count = source[key].length;
+    const el = document.createElement('div');
+    el.className = 'vcard';
+    el.dataset.key = key;
+    el.innerHTML = `<div class="vleft"><div class="vbadge">${m.badge}</div><div><div class="vname">${m.name}</div><div class="vsub">${m.sub}</div></div></div><div class="vcount">${count} Q</div>`;
+    el.addEventListener('click', ()=>{
+      document.querySelectorAll('.vcard').forEach(c=>c.classList.remove('selected'));
+      el.classList.add('selected');
+      state.variant = key;
+      document.getElementById('startBtn').disabled = false;
+      document.getElementById('startBtn').textContent = `Start ${m.name} drill`;
+    });
+    variantList.appendChild(el);
+  });
+}
+renderVariantList();
+
+document.getElementById('catFastBtn').addEventListener('click', ()=>setCategory('fast'));
+document.getElementById('catDebriefBtn').addEventListener('click', ()=>setCategory('debrief'));
+function setCategory(c){
+  if(state.category===c) return;
+  state.category = c;
+  state.variant = null;
+  document.getElementById('catFastBtn').classList.toggle('active', c==='fast');
+  document.getElementById('catDebriefBtn').classList.toggle('active', c==='debrief');
+  renderVariantList();
+  const startBtn = document.getElementById('startBtn');
+  startBtn.disabled = true;
+  startBtn.textContent = 'Select a variant to begin';
+}
+
+document.getElementById('modeTimedBtn').addEventListener('click', ()=>setMode('timed'));
+document.getElementById('modePracticeBtn').addEventListener('click', ()=>setMode('practice'));
+function setMode(m){
+  state.mode = m;
+  document.getElementById('modeTimedBtn').classList.toggle('active', m==='timed');
+  document.getElementById('modePracticeBtn').classList.toggle('active', m==='practice');
+}
+
+document.getElementById('startBtn').addEventListener('click', ()=>{
+  if(!state.variant) return;
+  startDrill();
+});
+
+/* ---------- quiz screen ---------- */
+function startDrill(){
+  state.qIndex = 0; state.score = 0; state.streak = 0; state.bestStreak = 0; state.answers = []; state.times = [];
+  state.runQuestions = buildRun(state.variant);
+  document.getElementById('screenStart').classList.add('hidden');
+  document.getElementById('screenEnd').classList.add('hidden');
+  document.getElementById('screenQuiz').classList.remove('hidden');
+  document.getElementById('qhVariant').textContent = (state.category==='debrief' ? 'DE-BRIEF · ' : '') + currentMeta()[state.variant].name;
+  document.getElementById('timerWrap').classList.toggle('hidden', state.mode!=='timed');
+  renderQuestion();
+}
+
+function renderQuestion(){
+  clearTimeout(timerHandle);
+  const q = state.runQuestions[state.qIndex];
+  document.getElementById('qhProgress').textContent = `Q ${state.qIndex+1}/${state.runQuestions.length}`;
+  document.getElementById('statScore').textContent = state.score;
+  document.getElementById('statStreak').textContent = state.streak;
+  const attempted = state.answers.length;
+  document.getElementById('statAcc').textContent = attempted ? Math.round(100*state.score/attempted)+'%' : '—';
+  document.getElementById('feedbackText').textContent = '';
+
+  document.getElementById('promptText').textContent = q.prompt;
+  const noteEl = document.getElementById('promptNote');
+  if(q.note){ noteEl.textContent = q.note; noteEl.classList.remove('hidden'); } else { noteEl.classList.add('hidden'); }
+  const visEl = document.getElementById('promptVisual');
+  if(q.promptVisual){ visEl.innerHTML = q.promptVisual; visEl.classList.remove('hidden'); } else { visEl.innerHTML=''; visEl.classList.add('hidden'); }
+
+  const grid = document.getElementById('optGrid');
+  grid.innerHTML = '';
+  const letters = ['A','B','C','D'];
+  q.options.forEach((opt,i)=>{
+    const btn = document.createElement('button');
+    btn.className = 'opt-btn' + (opt.svg ? ' visual':'');
+    btn.innerHTML = `<span class="opt-badge">${letters[i]}</span>` + (opt.svg ? `<span class="opt-svg-wrap">${opt.svg}</span>` : `<span>${opt.text}</span>`);
+    btn.addEventListener('click', ()=>answer(i));
+    grid.appendChild(btn);
+  });
+
+  state.qStart = Date.now();
+  state.timedOut = false;
+  if(state.mode==='timed') startTimer(); 
+}
+
+function startTimer(){
+  const bar = document.getElementById('timerBar');
+  bar.style.transition = 'none';
+  bar.style.width = '100%';
+  bar.style.background = 'linear-gradient(90deg,var(--hud),var(--amber))';
+  void bar.offsetWidth;
+  bar.style.transition = 'width 5s linear';
+  bar.style.width = '0%';
+  timerHandle = setTimeout(()=>{ state.timedOut = true; answer(-1); }, 5000);
+}
+function stopTimer(){
+  clearTimeout(timerHandle);
+  const bar = document.getElementById('timerBar');
+  const cs = getComputedStyle(bar).width;
+  bar.style.transition = 'none';
+  bar.style.width = cs;
+}
+
+function answer(selectedIdx){
+  stopTimer();
+  const q = state.runQuestions[state.qIndex];
+  const buttons = document.querySelectorAll('#optGrid .opt-btn');
+  buttons.forEach(b=>b.classList.add('locked'));
+  const elapsed = Date.now() - state.qStart;
+  const isCorrect = selectedIdx === q.correct;
+
+  buttons[q.correct].classList.add('correct');
+  if(selectedIdx>=0 && !isCorrect) buttons[selectedIdx].classList.add('wrong');
+  buttons.forEach((b,i)=>{ if(i!==q.correct && i!==selectedIdx) b.classList.add('dim'); });
+
+  if(isCorrect){ state.score++; state.streak++; state.bestStreak = Math.max(state.bestStreak,state.streak); }
+  else { state.streak = 0; }
+  state.times.push(elapsed);
+  state.answers.push({ prompt:q.prompt, correctText: optLabel(q.options[q.correct]), yourText: selectedIdx>=0 ? optLabel(q.options[selectedIdx]) : (state.timedOut? 'Timed out' : 'No answer'), isCorrect });
+
+  document.getElementById('feedbackText').textContent = isCorrect ? 'Correct' : (state.timedOut ? "Time's up" : 'Incorrect');
+  document.getElementById('statScore').textContent = state.score;
+  document.getElementById('statStreak').textContent = state.streak;
+  document.getElementById('statAcc').textContent = Math.round(100*state.score/state.answers.length)+'%';
+
+  setTimeout(()=>{
+    if(state.qIndex < state.runQuestions.length-1){ state.qIndex++; renderQuestion(); }
+    else { endDrill(); }
+  }, isCorrect ? 550 : 950);
+}
+
+function optLabel(opt){ return opt.text ? opt.text : '(image option)'; }
+
+document.getElementById('exitBtn').addEventListener('click', ()=>{
+  clearTimeout(timerHandle);
+  if(state.answers.length>0) endDrill(); else goToStart();
+});
+
+document.addEventListener('keydown', (e)=>{
+  if(document.getElementById('screenQuiz').classList.contains('hidden')) return;
+  const map = {a:0,b:1,c:2,d:3};
+  const k = e.key.toLowerCase();
+  if(map[k]!==undefined){
+    const buttons = document.querySelectorAll('#optGrid .opt-btn');
+    if(buttons.length && !buttons[0].classList.contains('locked')) answer(map[k]);
+  }
+});
+
+/* ---------- end screen ---------- */
+function endDrill(){
+  clearTimeout(timerHandle);
+  document.getElementById('screenQuiz').classList.add('hidden');
+  document.getElementById('screenEnd').classList.remove('hidden');
+  const total = state.answers.length;
+  document.getElementById('endVariantLabel').textContent = `${(state.category==='debrief' ? 'DE-BRIEF · ' : '')}${currentMeta()[state.variant].name} · COMPLETE`;
+  document.getElementById('endScore').textContent = `${state.score}/${total}`;
+  const pct = total ? Math.round(100*state.score/total) : 0;
+  document.getElementById('endScoreSub').textContent = pct>=85 ? 'Sharp run.' : pct>=60 ? 'Solid — a few to tighten up.' : 'Keep drilling this set.';
+  document.getElementById('metricAcc').textContent = pct+'%';
+  document.getElementById('metricStreak').textContent = state.bestStreak;
+  const avgMs = state.times.length ? Math.round(state.times.reduce((a,b)=>a+b,0)/state.times.length) : 0;
+  document.getElementById('metricTime').textContent = state.times.length ? (avgMs/1000).toFixed(1)+'s' : '—';
+
+  const reviewList = document.getElementById('reviewList');
+  reviewList.innerHTML = '';
+  const missed = state.answers.filter(a=>!a.isCorrect);
+  if(missed.length===0){
+    reviewList.innerHTML = '<div class="rev-empty">No misses this run. Clean sweep.</div>';
+  } else {
+    missed.forEach(a=>{
+      const d = document.createElement('div');
+      d.className = 'rev-item';
+      d.innerHTML = `<div class="rev-q">${a.prompt}</div><div class="rev-a">Your answer: <b>${a.yourText}</b> &nbsp;·&nbsp; Correct: <b class="right">${a.correctText}</b></div>`;
+      reviewList.appendChild(d);
+    });
+  }
+}
+
+document.getElementById('retryBtn').addEventListener('click', startDrill);
+document.getElementById('chooseAnotherBtn').addEventListener('click', goToStart);
+function goToStart(){
+  document.getElementById('screenQuiz').classList.add('hidden');
+  document.getElementById('screenEnd').classList.add('hidden');
+  document.getElementById('screenStart').classList.remove('hidden');
+}
+
+/* clock tag */
+function tickClock(){
+  const d = new Date();
+  document.getElementById('clockTag').textContent = d.toTimeString().slice(0,8);
+}
+tickClock(); setInterval(tickClock, 1000);
+</script>
+</body>
+</html>
